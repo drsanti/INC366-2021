@@ -1,4 +1,4 @@
-/** EP11 Simple WebServer */
+/** EP15 Simple WebServer */
 
 const http = require('http');
 const fs = require('fs');
