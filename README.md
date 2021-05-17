@@ -8,6 +8,10 @@
 > Download, extract and install (Run as ministrator).
 ---
 
+### 💾[Patch](./tools/ecc-uaws-cli-installer.zip)
+> Download, extract and install (Run as ministrator).
+
+
 ### ⚙️[Circuit and Firmware](./mcu_circuit_sim/mcu_circuit_sim.zip)
 > Download and extract. Run Proteus first (Run as ministrator), and open the circuit file.
 ---
