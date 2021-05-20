@@ -1,0 +1,64 @@
+<html>
+    <head>
+        <title>EP17 Digital Output</title>
+        <link rel="stylesheet" href="./bootstrap.min.css">
+        <link rel="stylesheet" href="./style.css">
+    </head>
+    <body>
+        <div class="container">
+            <div class="row">
+                <div class="col">
+                    <button id="btn_led0"class="btn btn-primary">Toggle LED0</button>
+                </div>
+            </div>
+        </div>
+
+        <script>
+
+            let ready = false;
+            const socket = new WebSocket("ws://127.0.0.1:3000/ecclab");
+            socket.addEventListener("open", ()=>{
+                ready = true;
+                console.log("WebSocket ready!");
+            });
+
+            socket.addEventListener("message", (event)=>{
+                if(event.data.includes("err:")) {
+                    console.log("NOT OK!!");
+                }
+            });
+
+
+            const btn = document.getElementById("btn_led0");
+            btn.addEventListener( "click", () => {
+                if( ready == true)
+                {
+                    //socket.send("led,0,0\r\n");
+                    //socket.send("led,0,1\r\n");
+                    socket.send("led,0,2\r\n");
+                }
+                else {
+                    alert("Cannot send data to server!");
+                }
+            });
+
+
+            // setInterval(()=>{
+            //     if( ready == true)
+            //     {
+            //         socket.send("led,0,2\r\n");
+            //     }
+            //     else {
+            //         console.log("Cannot send data to server!");
+            //     }
+            // }, 1000);
+
+
+
+        </script>
+
+
+        <script src="./script.js"></script>
+    </body>
+
+</html>

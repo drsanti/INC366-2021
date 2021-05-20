@@ -1,0 +1,103 @@
+<html>
+    <head>
+        <title>EP19 Analog Input</title>
+        <link rel="stylesheet" href="./bootstrap.min.css">
+        <link rel="stylesheet" href="./style.css">
+
+        <style>
+            .progress {
+                margin-top: 10px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="row">
+                <div class="col">
+                    <div class="progress">
+                        <div id="adc3" class="progress-bar bg-success"
+                            style="width: 50%;"
+                            aria-valuemin="0" aria-valuemax="100">
+                            50%
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col">
+                    <div class="progress">
+                        <div id="adc2" class="progress-bar bg-info"
+                            style="width: 50%;"
+                            aria-valuemin="0" aria-valuemax="100">
+                            50%
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col">
+                    <div class="progress">
+                        <div id="adc1" class="progress-bar bg-warning"
+                            style="width: 50%;"
+                            aria-valuemin="0" aria-valuemax="100">
+                            50%
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col">
+                    <div class="progress">
+                        <div id="adc0" class="progress-bar bg-danger"
+                            style="width: 50%;"
+                            aria-valuemin="0" aria-valuemax="100">
+                            50%
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <script>
+
+            const arrPG = [];
+            arrPG[3] = document.getElementById("adc3");
+            arrPG[2] = document.getElementById("adc2");
+            arrPG[1] = document.getElementById("adc1");
+            arrPG[0] = document.getElementById("adc0");
+
+            function update_adc_ui(id, val)
+            {
+                // val: 0-1023
+                let pc = val*100/1023;
+                arrPG[id].style.width = pc + "%";
+                arrPG[id].innerHTML   = pc.toFixed(2) + "%"
+            }
+
+
+            const socket = new WebSocket("ws://127.0.0.1:3000/ecclab");
+            socket.addEventListener("open", ()=>{
+                console.log("WebSocket Ready!");
+            });
+            socket.addEventListener("message", (event)=>{
+                const str = event.data;
+                if(str.indexOf("ok: adc,") == 0) {
+                    const ic = str.indexOf(",");
+                    const id = str.substring(ic+1, ic+2) * 1;
+
+                    const str2 = str.substring(ic+3);
+                    const ic2 = str2.indexOf(",");
+                    const val = str2.substring(0, ic2) * 1;
+
+                    update_adc_ui(id, val); // val: 0-1023
+                }
+            });
+        </script>
+
+        <script src="./script.js"></script>
+    </body>
+</html>

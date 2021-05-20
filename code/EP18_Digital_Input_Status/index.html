@@ -1,0 +1,94 @@
+<html>
+    <head>
+        <title>EP18 Digital Input</title>
+        <link rel="stylesheet" href="./bootstrap.min.css">
+        <link rel="stylesheet" href="./style.css">
+        <style>
+            body{
+                background-color: #222;
+            }
+            .container{
+                margin-top: 20px;
+            }
+            .alert{
+                text-align: center;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="row">
+                <div class="col">
+                    <div id="psw3" class="alert alert-primary" role="alert">
+                        OFF
+                    </div>
+                </div>
+
+                <div class="col">
+                    <div id="psw2" class="alert alert-primary" role="alert">
+                        OFF
+                    </div>
+                </div>
+
+                <div class="col">
+                    <div id="psw1" class="alert alert-primary" role="alert">
+                        OFF
+                    </div>
+                </div>
+
+                <div class="col">
+                    <div id="psw0" class="alert alert-primary" role="alert">
+                        OFF
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+
+            let arrSW = [];
+            arrSW[0] = document.getElementById("psw0");
+            arrSW[1] = document.getElementById("psw1");
+            arrSW[2] = document.getElementById("psw2");
+            arrSW[3] = document.getElementById("psw3");
+
+            // alert-primary    OFF
+            // alert-warning    ON
+            function update_ui(id, st)
+            {
+                if(st == 1) {
+                    arrSW[id].innerHTML = "ON";
+                    arrSW[id].classList.remove("alert-primary");
+                    arrSW[id].classList.add("alert-warning");
+                }
+                else {
+                    arrSW[id].innerHTML = "OFF";
+                    arrSW[id].classList.remove("alert-warning");
+                    arrSW[id].classList.add("alert-primary");
+                }
+            }
+
+            const socket = new WebSocket("ws://127.0.0.1:3000/ecclab");
+            socket.addEventListener("open", ()=>{
+                console.log("WebSocket ready!");
+            });
+
+            socket.addEventListener("message", (event)=>{
+
+                // ok: psw,x,1,KEY_DOWN
+                // ok: psw,x,0,KEY_UP
+                let str = event.data;
+                let idx = str.indexOf("ok: psw,");
+                if(idx == 0) {
+                    let ic = str.indexOf(",");
+                    let id = str.substring(ic+1, ic+2);
+                    let st = str.substring(ic+3, ic+4);
+                    update_ui(id, st);
+                }
+            });
+        </script>
+
+        <script src="./script.js"></script>
+    </body>
+
+</html>
