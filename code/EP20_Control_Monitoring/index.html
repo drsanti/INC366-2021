@@ -1,0 +1,268 @@
+<html>
+    <head>
+        <title>EP20 Control & Monitoring</title>
+        <link rel="stylesheet" href="./bootstrap.min.css">
+        <link rel="stylesheet" href="./style.css">
+
+        <style>
+            .progress {
+                margin-top: 10px;
+            }
+            body{
+                background-color: #222;
+            }
+        </style>
+    </head>
+    <body>
+
+         <!-- ADCs -->
+         <div class="card text-white bg-danger mb-3" style="max-width: 100%;">
+            <div class="card-header">Analog Input Values</div>
+            <div class="card-body">
+
+                <div class="row">
+                    <div class="col-3">ADC3</div>
+                    <div class="col-9">
+                        <div class="progress">
+                            <div id="adc3" class="progress-bar bg-success"
+                                style="width: 100%;"
+                                aria-valuemin="0" aria-valuemax="100">
+                                Unknown
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-3">ADC2</div>
+                    <div class="col-9">
+                        <div class="progress">
+                            <div id="adc2" class="progress-bar bg-info"
+                                style="width: 100%;"
+                                aria-valuemin="0" aria-valuemax="100">
+                                Unknown
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-3">ADC1</div>
+                    <div class="col-9">
+                        <div class="progress">
+                            <div id="adc1" class="progress-bar bg-warning"
+                                style="width: 100%;"
+                                aria-valuemin="0" aria-valuemax="100">
+                                Unknown
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-3">ADC0</div>
+                    <div class="col-9">
+                        <div class="progress">
+                            <div id="adc0" class="progress-bar bg-primary"
+                                style="width: 100%;"
+                                aria-valuemin="0" aria-valuemax="100">
+                                Unknown
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+
+        <!-- LEDs -->
+        <div class="card text-white bg-primary mb-3" style="max-width: 100%;">
+            <div class="card-header">LED Control & Monitoring</div>
+            <div class="card-body">
+
+                <div class="row">
+                    <div class="col">
+                        <img id="led3" src="./images/led_0.png" width="64px">
+                    </div>
+                    <div class="col">
+                        <img id="led2" src="./images/led_0.png" width="64px">
+                    </div>
+                    <div class="col">
+                        <img id="led1" src="./images/led_0.png" width="64px">
+                    </div>
+                    <div class="col">
+                        <img id="led0" src="./images/led_0.png" width="64px">
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- PSWs -->
+        <div class="card text-white bg-success mb-3" style="max-width: 100%;">
+            <div class="card-header">Sensor Indicators</div>
+            <div class="card-body">
+
+                <div class="row">
+                    <div class="col">
+                        <img id="psw3" src="./images/psw_0.png" width="64px">
+                    </div>
+                    <div class="col">
+                        <img id="psw2" src="./images/psw_0.png" width="64px">
+                    </div>
+                    <div class="col">
+                        <img id="psw1" src="./images/psw_0.png" width="64px">
+                    </div>
+                    <div class="col">
+                        <img id="psw0" src="./images/psw_0.png" width="64px">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <script>
+
+            const socket = new WebSocket("ws://127.0.0.1:3000/ecclab");
+            socket.addEventListener("open", ()=>{
+                console.log("WebSocket Ready!");
+
+                setTimeout( () =>{
+                    // Request initial status of LEDs
+                    socket.send("led,0,3\r\n");
+                    socket.send("led,1,3\r\n");
+                    socket.send("led,2,3\r\n");
+                    socket.send("led,3,3\r\n");
+                }, 500);
+
+                setTimeout( () =>{
+                    // Request initial status of PSWs
+                    socket.send("psw,0\r\n");
+                    socket.send("psw,1\r\n");
+                    socket.send("psw,2\r\n");
+                    socket.send("psw,3\r\n");
+                }, 1000);
+
+                setTimeout( () =>{
+                    // Request initial status of ADCs
+                    socket.send("adc,0\r\n");
+                    socket.send("adc,1\r\n");
+                    socket.send("adc,2\r\n");
+                    socket.send("adc,3\r\n");
+                }, 1500);
+
+            });
+            socket.addEventListener("message", (event)=>{
+
+                const str1 = event.data;
+
+                // LED ------------------------------------------------------
+                if(str1.indexOf("ok: led,") == 0) {
+                    let ic1 = str1.indexOf(",");
+                    let id  = str1.substring(ic1+1, ic1+2) * 1;
+                    let da = str1[str1.length-1] * 1;
+
+                    // Update LED Status (Data from MCU)
+                    ledSts[id] = da;
+
+                    // Update LED UI
+                    ledArr[id].src = "./images/led_" + ledSts[id] + ".png";
+                }
+
+
+                // PSW ------------------------------------------------------
+                let idx = str1.indexOf("ok: psw,");
+                if(idx == 0) {
+                    let ic = str1.indexOf(",");
+                    let id = str1.substring(ic+1, ic+2) * 1;
+                    let st = str1.substring(ic+3, ic+4) * 1;
+
+                    // Update PSW Status (Data from MCU)
+                    pswSts[id] = st;
+
+                    // Update PSW UI
+                    pswArr[id].src = "./images/psw_" + pswSts[id] + ".png";
+                }
+
+                // ADC -------------------------------------------------------
+
+                if(str1.indexOf("ok: adc,") == 0) {
+
+                    // ok: adc,0,135,27,-1  (OnChanged)
+                    // ok: adc,3,582        (Request)
+
+                    let cc = str1.match(/\,/g).length;
+
+                    // cc == 2: Request
+                    if( cc == 2)  {
+                        const ic = str1.indexOf(",");
+                        const id = str1.substring(ic+1, ic+2) * 1;
+                        const val = str1.substring(ic+3) * 1;
+
+                        // val: 0-1023
+                        let pc = val*100/1023;
+                        arrPG[id].style.width = pc + "%";
+                        arrPG[id].innerHTML   = pc.toFixed(2) + "%";
+                    }
+
+                    // cc == 4: OnChangedEvent
+                    else if( cc == 4) {
+                        const ic = str1.indexOf(",");
+                        const id = str1.substring(ic+1, ic+2) * 1;
+
+                        const str2 = str1.substring(ic+3);
+                        const ic2 = str2.indexOf(",");
+                        const val = str2.substring(0, ic2) * 1;
+
+                        // val: 0-1023
+                        let pc = val*100/1023;
+                        arrPG[id].style.width = pc + "%";
+                        arrPG[id].innerHTML   = pc.toFixed(2) + "%";
+                    }
+                }
+            });
+
+
+            const pswArr = [];
+            let pswSts = [0, 0, 0, 0];
+            for(let i=0; i<4; i++) {
+                pswArr[i] = document.getElementById("psw"+i);
+            }
+
+
+            const ledArr = [];
+            let ledSts = [0, 0, 0, 0];
+            for(let i=0; i<4; i++)
+            {
+                ledArr[i] = document.getElementById("led"+i);
+                ledArr[i].addEventListener("click", (ele) => {
+
+                    // Toggle LED Status (Data)
+                    if(ledSts[i] == 0) {
+                        ledSts[i] = 1
+                    }
+                    else {
+                        ledSts[i] = 0;
+                    }
+                    // send command to MCU.
+                    let cmd = "led," + i + "," + ledSts[i] + "\r\n";
+                    socket.send(cmd);
+                });
+            }
+
+            // ADCs
+            const arrPG = [];
+            arrPG[3] = document.getElementById("adc3");
+            arrPG[2] = document.getElementById("adc2");
+            arrPG[1] = document.getElementById("adc1");
+            arrPG[0] = document.getElementById("adc0");
+
+
+
+        </script>
+
+
+        <script src="./script.js"></script>
+    </body>
+</html>
